@@ -17,13 +17,13 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('company_id');//外部キー
             $table->string('product_name','30');
-            $table->integer('price') -> default('0');
-            $table->integer('stock') -> default('0');
+            $table->integer('price')->default('0');
+            $table->integer('stock')->default('0');
             $table->text('comment');
             $table->string('img_path');
             $table->timestamps();
 
-            $table->foreign('company_id') -> references('id') -> on('companies') -> onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

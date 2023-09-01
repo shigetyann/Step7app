@@ -14,11 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('sales', function (Blueprint $table) {
-            $table -> bigIncrements('id');
-            $table -> unsignedBigInteger('product_id');//外部キー
-            $table -> timestamps();
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('product_id');//外部キー
+            $table->timestamps();
 
-            $table -> foreign('product_id') -> references('id') -> on('products')  -> onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 

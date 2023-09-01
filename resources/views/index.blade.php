@@ -26,6 +26,7 @@
                                         <div class = "col-3">
                                         <label for="product_name">{{ __('メーカー名') }}</label>
                                             <select name = "category">
+                                            <option>メーカー名</option>
                                             @forelse($companies as $company)
                                                 <option value="{{ $company['company_name'] }}" {{ $company['company_name'] == ($category ?? '') ? 'selected' : '' }}>{{ $company['company_name'] }}</option>
                                             @empty
@@ -66,10 +67,10 @@
                             <td>{{ $product -> stock}}</td>
                             <td>{{ $product -> company_name}}</td>
                             <td><a class="btn btn-primary btn-sm mx-1" href="{{ route('products.show', ['product' => $product->id]) }}">詳細</a>
-                                <form method="POST" action="{{ route('products.destroy', ['product' => $product->id])}}" style="display:inline;">
+                                <form method="POST" action="{{ route('products.destroy', ['product' => $product->id])}}" style="display:inline;" name="delete_form">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-danger btn-sm mx-1" type="submit" >削除</button>
+                                    <button class="btn btn-danger btn-sm mx-1" type="submit"  onclick="return confirm('本当に削除しますか？');">削除</button>
                                 </form>
                             </td>
                         </tr>
@@ -84,5 +85,5 @@
         </div>
     </div>
 </div>
-
 @endsection
+

@@ -119,7 +119,7 @@ class ProductController extends Controller
         $product->stock = $request->stock;
         $product->save();
 
-        return redirect() -> route('products.index')
+        return redirect() -> route('products.show', $product)
             -> with('success', '商品情報を更新しました。');
     }
 
