@@ -98,14 +98,13 @@ class Product extends Model
                 'price' => 'required|integer',
                 'stock' => 'required|integer',
                 'comment' => 'required|max:200',
-                'img_path' => 'required|file|image',
+                'img_path' => 'nullable|file|image',
             ]);
 
             $product->product_name = $request->input(["product_name"]);
             $product->price = $request->input(["price"]);
             $product->stock = $request->input(["stock"]);
             $product->comment = $request->input(["comment"]);
-            
             $product->company_id = $request->input('company_id');
 
             if($request->hasFile('img_path')){
