@@ -7,8 +7,9 @@ use App\Models\Company;
 use App\Models\Product;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 use function Symfony\Component\String\b;
+
 
 class ProductController extends Controller
 {
@@ -27,8 +28,9 @@ class ProductController extends Controller
         $category = $request  -> category;
         
         $model = new Product();
-        $products = $model -> getList($keyword, $category);
-        $companies = Company::distinct()->select('company_name','id')->get();
+        $products = $model->getList($keyword, $category);
+        $comp = new Company();
+        $companies = $comp->getList();
 
         return view('index', compact('products', 'keyword', 'category', 'companies'));
     }
@@ -38,9 +40,10 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request)
+    public function create(Product $product)
     {
-        $companies = Company::distinct()->select('company_name','id')->get();
+        $comp = new Company();
+        $companies = $comp->getList();
         return view('create',compact('companies'));
     }
 
@@ -52,27 +55,9 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request -> validate([
-            'product_name' => 'required|max:20',
-            'price' => 'required|integer',
-            'company_name' => 'required|string|exists:companies,company_name',
-            'stock' => 'required|integer',
-            'comment' => 'required|max:200',
-            'img_path' => 'required|file|image',
-        ]);
-
-        $products = new Product;
-        $products -> product_name = $request -> input(["product_name"]);
-        $products -> price = $request -> input(["price"]);
-        $products -> company_id = Company::where('company_name', $request -> input('company_name'))->first()->id;
-        $products -> stock = $request -> input(["stock"]);
-        $products -> comment = $request -> input(["comment"]);
-        $file = $request -> file("img_path");
-        $path = $file -> store('img','public');
-        $products -> img_path = $path;
-        $products -> save();
-
-        return redirect() -> route('products.index');
+        $product = new Product;
+        $product->create($request);
+        return redirect()->route('products.index', $product);
     }
 
     /**
@@ -94,7 +79,6 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-
         $companies = Company::getList();
         return view('edit', compact('product', 'companies'));
     }
@@ -102,24 +86,16 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
-        $validator = Validator([
-            'product_name' => 'required|max:20',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-        ]);
+        $product = Product::find($id);
 
-        $product->product_name = $request->product_name;
-        $product->price = $request->price;
-        $product->stock = $request->stock;
-        $product->save();
-
-        return redirect() -> route('products.show', $product)
+        $model = new Product();
+        $model->renewal($request, $product);
+        return redirect()->route('products.show', $product)
             -> with('success', '商品情報を更新しました。');
     }
 
@@ -131,7 +107,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->delete();
+        $product->removal($product);
         return redirect() -> route('products.index');
     }
 }

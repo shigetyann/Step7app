@@ -25,7 +25,7 @@
                 <select class="form-control" name="company_name">
                     <option>メーカー名を選択してください</option>
                     @forelse($companies as $company)
-                        <option value="{{ $company['company_name'] }}" {{ $company['company_name'] == ($category ?? '') ? 'selected' : '' }}>{{ $company['company_name'] }}</option>
+                        <option value="{{ $company->company_name }}" {{ $company->company_name == ($category ?? '') ? 'selected' : '' }}>{{ $company->company_name }}</option>
                     @empty
                         <option value="">メーカー名</option>
                     @endforelse

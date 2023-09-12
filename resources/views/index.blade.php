@@ -26,9 +26,8 @@
                                         <div class = "col-3">
                                         <label for="product_name">{{ __('メーカー名') }}</label>
                                             <select name = "category">
-                                            <option>メーカー名</option>
-                                            @forelse($companies as $company)
-                                                <option value="{{ $company['company_name'] }}" {{ $company['company_name'] == ($category ?? '') ? 'selected' : '' }}>{{ $company['company_name'] }}</option>
+                                            @forelse($companies->sortBy('company_name') as $company)
+                                                <option value="{{ $company->company_name }}" {{ $company->company_name == ($category ?? '') ? 'selected' : '' }}>{{ $company->company_name }}</option>
                                             @empty
                                                 <option value="">メーカー名</option>
                                             @endforelse
@@ -63,8 +62,8 @@
                             <td >{{ $product -> id}}</td>
                             <td><img src="{{ asset('storage/'. $product->img_path) }}" width="100px" height="100px"></td>
                             <td>{{ $product -> product_name}}</td>
-                            <td>{{ $product -> price}}</td>
-                            <td>{{ $product -> stock}}</td>
+                            <td>{{ $product -> price}}円</td>
+                            <td>{{ $product -> stock}}個</td>
                             <td>{{ $product -> company_name}}</td>
                             <td><a class="btn btn-primary btn-sm mx-1" href="{{ route('products.show', ['product' => $product->id]) }}">詳細</a>
                                 <form method="POST" action="{{ route('products.destroy', ['product' => $product->id])}}" style="display:inline;" name="delete_form">
