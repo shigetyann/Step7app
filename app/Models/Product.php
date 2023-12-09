@@ -4,7 +4,7 @@ namespace App\Models;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Validator;
+
 
 
 
@@ -34,20 +34,40 @@ class Product extends Model
         return $product;
     }
 
-    public function getList($keyword, $category) 
+    public function getList($keyword, $category, $priceMin = null, $priceMax = null, $stockMin = null, $stockMax = null) 
     { 
         $model = $this->product();
         if($keyword)
         {
             $model -> where('product_name', 'like', "%{$keyword}%");
         }
-        
+
         if($category)
         {
             $model -> where('company_name', 'like', "%{$category}%");
         }
         
-        return $model->paginate(5)->appends(['keyword' => $keyword, 'category' => $category]);
+        if($priceMin)
+        {
+            $model -> where('price', '>=', $priceMin);
+        }
+
+        if($priceMax)
+        {
+            $model -> where('price', '<=', $priceMax);
+        }
+
+        if($stockMin)
+        {
+            $model -> where('stock', '>=', $stockMin);
+        }
+
+        if($stockMax)
+        {
+            $model -> where('stock', '<=', $stockMax);
+        }
+
+        return $model->paginate(5)->appends(['keyword' => $keyword, 'category' => $category, 'priceMin' => $priceMin, 'priceMax' => $priceMax, 'stockMin' => $stockMin, 'stockMax' => $stockMax,]);
     }
 
     public function create(Request $request)
@@ -117,19 +137,6 @@ class Product extends Model
 
             DB::commit();
 
-        }catch(\Exception $e){
-            DB::rollBack();
-            return back()->withInput()->withErrors($e->getMessage());
-        }
-    }
-
-    public function removal(Product $product)
-    {
-        DB::beginTransaction();
-
-        try{
-            $product->delete();
-            DB::commit();
         }catch(\Exception $e){
             DB::rollBack();
             return back()->withInput()->withErrors($e->getMessage());

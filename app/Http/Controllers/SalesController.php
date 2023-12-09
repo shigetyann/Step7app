@@ -2,11 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\Sales;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class SalesController extends Controller
 {
+
+    public function purchase(Request $request)
+    {
+        
+                $productID = $request->input('product_id');
+                $quantity = $request->input('quantity', 1);
+    
+                $product = Product::find($productID);
+    
+                if(!$product){
+                    return response()->json(['message' => '商品が存在しません'], 404);
+                }
+                if($product->stock < $quantity){
+                    return response()->json(['message' => '在庫がありません'], 400);
+                }
+                $product->stock -= $quantity;
+                $product->save();
+    
+                $sale = new Sales([
+                    'product_id' => $productID,
+                    'quantity' => $quantity,
+                ]);
+                $sale->save();
+            
+        
+        return response()->json(['message' => 'お買い上げありがとうございます。']);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -14,7 +44,7 @@ class SalesController extends Controller
      */
     public function index()
     {
-        //
+        
     }
 
     /**

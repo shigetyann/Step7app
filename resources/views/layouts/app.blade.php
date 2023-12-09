@@ -11,12 +11,14 @@
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/css/theme.default.min.css">
 
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/js/delete.js'])
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/extras/jquery.metadata.min.js"></script>
+    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/js/delete.js', 'resources/js/purchase.js'])
     
-
 </head>
 <body>
     <div id="app">
@@ -26,13 +28,11 @@
                     商品管理システム
                 </a>
 
-
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
 
                     </ul>
-
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
                         <!-- Authentication Links -->
@@ -77,5 +77,22 @@
             @yield('content')
         </main>
     </div>
+
+
+    <script>
+    $("#search").on('click',function(){
+        $.ajax({
+            type:"GET",
+            url:"{{ route('search') }}",
+            dataType: 'json',
+        })
+        $("#table").trigger("update");
+    });
+    </script>
+    <script>
+            $(document).ready(function() {
+                $("#table").tablesorter();
+            });
+    </script>
 </body>
 </html>

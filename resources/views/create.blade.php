@@ -15,7 +15,7 @@
             </div>
             <div class="form-group">
                 <label for="price">{{ __('価格') }}<span class="badge badge-danger ml-2">{{ __('必須') }}</span></label>
-                <input type="number" class="form-control" name="price" id="price" placeholder="価格">
+                <input type="number" class="form-control" name="price" id="price" placeholder="価格" min="0">
                 @error('price')
                     <span style="color:red;">価格を入力してください</span>
                 @enderror
@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
                 <label for="stock">{{ __('在庫数') }}<span class="badge badge-danger ml-2">{{ __('必須') }}</span></label>
-                <input type="number" class="form-control" name="stock" id="stock" placeholder="在庫数">
+                <input type="number" class="form-control" name="stock" id="stock" placeholder="在庫数" min="0">
                 @error('stock')
                     <span style="color:red;">在庫数を入力してください</span>
                 @enderror

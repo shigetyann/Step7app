@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Product;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use function Symfony\Component\String\b;
+
+
+
 
 
 class ProductController extends Controller
@@ -22,18 +23,45 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function getLists($keyword, $category, $priceMin = null, $priceMax = null, $stockMin = null, $stockMax = null)
+    {
+        $model = new Product();
+        $products = $model->getList($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
+        $comp = new Company();
+        $companies = $comp->getList(); 
+    
+        return compact('products', 'keyword', 'category', 'companies', 'priceMin', 'priceMax', 'stockMin', 'stockMax');
+    }
+    
+    public function search(Request $request)
+    {
+        $keyword = $request -> keyword;
+        $category = $request  -> category;
+        $priceMin = $request  -> priceMin;
+        $priceMax = $request  -> priceMax;
+        $stockMin = $request  -> stockMin;
+        $stockMax = $request  -> stockMax;
+
+        $data = $this->getLists($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
+
+        return response()->json($data);
+    }
+
+    
     public function index(Request $request)
     {
         $keyword = $request -> keyword;
         $category = $request  -> category;
-        
-        $model = new Product();
-        $products = $model->getList($keyword, $category);
-        $comp = new Company();
-        $companies = $comp->getList();
+        $priceMin = $request  -> priceMin;
+        $priceMax = $request  -> priceMax;
+        $stockMin = $request  -> stockMin;
+        $stockMax = $request  -> stockMax;
 
-        return view('index', compact('products', 'keyword', 'category', 'companies'));
+        $data = $this->getLists($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
+    
+        return view('index', $data);
     }
+    
 
     /**
      * Show the form for creating a new resource.
@@ -107,7 +135,19 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->removal($product);
-        return redirect() -> route('products.index');
+        DB::beginTransaction();
+
+        try {
+            $product->delete();
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
+
+    
 }
