@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
+use Illuminate\Support\Facades\Cache;
 use App\Models\Company;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 
 
 
@@ -26,13 +27,23 @@ class ProductController extends Controller
     public function getLists($keyword, $category, $priceMin = null, $priceMax = null, $stockMin = null, $stockMax = null)
     {
         $model = new Product();
-        $products = $model->getList($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
-        $comp = new Company();
-        $companies = $comp->getList(); 
-    
-        return compact('products', 'keyword', 'category', 'companies', 'priceMin', 'priceMax', 'stockMin', 'stockMax');
+        $query = $model->getList($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
+        return $query;
     }
-    
+
+    private function getPaginatedProducts()
+    {
+        $keyword = request()->keyword;
+        $category = request()->category;
+        $priceMin = request()->priceMin;
+        $priceMax = request()->priceMax;
+        $stockMin = request()->stockMin;
+        $stockMax = request()->stockMax;
+
+        $query = $this->getLists($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
+        return $query->paginate(5);
+    }
+
     public function search(Request $request)
     {
         $keyword = $request -> keyword;
@@ -47,20 +58,18 @@ class ProductController extends Controller
         return response()->json($data);
     }
 
-    
+    private function getCompanies() {
+        $comp = new Company();
+        return $comp->getList();
+    }
+
     public function index(Request $request)
     {
-        $keyword = $request -> keyword;
-        $category = $request  -> category;
-        $priceMin = $request  -> priceMin;
-        $priceMax = $request  -> priceMax;
-        $stockMin = $request  -> stockMin;
-        $stockMax = $request  -> stockMax;
-
-        $data = $this->getLists($keyword, $category, $priceMin, $priceMax, $stockMin, $stockMax);
-    
-        return view('index', $data);
+        $products = $this->getPaginatedProducts();
+        $companies = $this->getCompanies();
+        return view('index', ['products' => $products, 'companies' => $companies]);
     }
+
     
 
     /**
@@ -70,8 +79,7 @@ class ProductController extends Controller
      */
     public function create(Product $product)
     {
-        $comp = new Company();
-        $companies = $comp->getList();
+        $companies = $this->getCompanies();
         return view('create',compact('companies'));
     }
 
@@ -107,7 +115,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $companies = Company::getList();
+        $companies = $this->getCompanies();
         return view('edit', compact('product', 'companies'));
     }
 
@@ -140,14 +148,17 @@ class ProductController extends Controller
         try {
             $product->delete();
             DB::commit();
+            Cache::flush();
 
-            return response()->json(['success' => true]);
+            $products = $this->getPaginatedProducts();
+
+            $table = view('products.table', compact('products'))->render();
+            $pagination = view('products.pagination', compact('products'))->render();
+
+            return response()->json(['success' => true, 'message' => '商品を削除しました。', 'table' => $table, 'pagination' => $pagination]);
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
-    
 }

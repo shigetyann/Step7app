@@ -33,8 +33,6 @@
                 @error('company_name')
                     <span style="color:red;">メーカー名が選択されておりません</span>
                 @enderror
-                <!-- メーカー名を新規登録する場合-->
-                <!-- <input type="text" class="form-control" name="company_name"> -->
             </div>
             <div class="form-group">
                 <label for="stock">{{ __('在庫数') }}<span class="badge badge-danger ml-2">{{ __('必須') }}</span></label>

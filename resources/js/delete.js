@@ -1,4 +1,4 @@
-jQuery(".btn-danger").on('click',function(){
+jQuery(document).on('click', '.btn-danger', function() {
     var deleteConfirm = confirm('削除してよろしいでしょうか？');
     if(deleteConfirm == true){
         var clickEle = jQuery(this);
@@ -14,10 +14,12 @@ jQuery(".btn-danger").on('click',function(){
 
         })
         .done(function(data) {
+            console.log(data); 
             if (data.success) {
-                clickEle.parents('tr').remove();
+                alert(data.message);
                 console.log("Ajaxリクエストが成功しました。");
-                location.reload(); 
+                jQuery('#table').html(data.table);
+                jQuery('.pagination').html(data.pagination);
             } else {
                 console.error("Ajaxリクエストは成功しましたが、レスポンスのsuccessプロパティがfalseです。");
             }

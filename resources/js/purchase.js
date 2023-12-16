@@ -11,22 +11,19 @@ jQuery('.purchase-button').on('click',function(){
                 _token:jQuery('meta[name="csrf-token"]').attr('content'),
                 product_id: product_id,
                 quantity: quantity,
-            },
-            success: function(response) {
-                alert(response.message);
-                var stockElement = jQuery('.stock-display[data-product_id="' + product_id + '"]');
-                var currentStock = parseInt(stockElement.text(), 10);
-                var newStock = currentStock - quantity;
-                stockElement.text(newStock + '個');
-            },
-            error: function(response) {
-                if(response.responseJSON && response.responseJSON.message) {
-                    alert(response.responseJSON.message);
-                } else {
-                    alert('エラーが発生しました');
-                }
+            }
+        })
+        .done(function(response) {
+            alert(response.message);
+            var stockElement = jQuery('.stock-display[data-product_id="' + product_id + '"]');
+            stockElement.text(response.new_stock + '個');
+        })
+        .fail(function(response) {
+            if(response.responseJSON && response.responseJSON.message) {
+                alert(response.responseJSON.message);
+            } else {
+                alert('エラーが発生しました');
             }
         });
     }
 });
-

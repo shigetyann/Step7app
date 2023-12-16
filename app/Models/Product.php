@@ -4,8 +4,7 @@ namespace App\Models;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
-
-
+use Illuminate\Support\Facades\Validator;
 
 
 class Product extends Model
@@ -21,9 +20,7 @@ class Product extends Model
     ];
 
     public function getimageUrlAttribute()
-    {
-        return asset('storage/'.$this -> img_path);
-    }
+    {return asset('storage/'.$this -> img_path);}
 
     public static function product()
     {
@@ -34,48 +31,42 @@ class Product extends Model
         return $product;
     }
 
-    public function getList($keyword, $category, $priceMin = null, $priceMax = null, $stockMin = null, $stockMax = null) 
-    { 
-        $model = $this->product();
+    public function getList($keyword = null, $category = null, $priceMin = null, $priceMax = null, $stockMin = null, $stockMax = null) 
+    {
+        $model = Product::query();
         if($keyword)
-        {
-            $model -> where('product_name', 'like', "%{$keyword}%");
-        }
+        {$model -> where('product_name', 'like', "%{$keyword}%");}
 
         if($category)
         {
-            $model -> where('company_name', 'like', "%{$category}%");
+            $company = Company::where('company_name', $category)->first();
+            if($company) {
+                $model -> where('company_id', $company->id);
+            }
         }
         
         if($priceMin)
-        {
-            $model -> where('price', '>=', $priceMin);
-        }
+        {$model -> where('price', '>=', $priceMin);}
 
         if($priceMax)
-        {
-            $model -> where('price', '<=', $priceMax);
-        }
+        {$model -> where('price', '<=', $priceMax);}
 
         if($stockMin)
-        {
-            $model -> where('stock', '>=', $stockMin);
-        }
+        {$model -> where('stock', '>=', $stockMin);}
 
         if($stockMax)
-        {
-            $model -> where('stock', '<=', $stockMax);
-        }
+        {$model -> where('stock', '<=', $stockMax);}
 
-        return $model->paginate(5)->appends(['keyword' => $keyword, 'category' => $category, 'priceMin' => $priceMin, 'priceMax' => $priceMax, 'stockMin' => $stockMin, 'stockMax' => $stockMax,]);
+        return $model;
     }
+
 
     public function create(Request $request)
     {
         DB::beginTransaction();
 
         try{
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'product_name' => 'required|max:20',
                 'price' => 'required|integer',
                 'company_name' => 'required|string|exists:companies,company_name',
@@ -84,35 +75,37 @@ class Product extends Model
                 'img_path' => 'required|file|image',
             ]);
 
+            if ($validator->fails()) {
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+
             $products = new Product;
             $products->product_name = $request->input(["product_name"]);
             $products->price = $request->input(["price"]);
             $products->stock = $request->input(["stock"]);
             $products->comment = $request->input(["comment"]);
-            
             $products->company_id = Company::where('company_name',
                 $request->input('company_name'))->first()->id;
 
             $file = $request->file("img_path");
             $path = $file->store('img','public');
             $products->img_path = $path;
-
             $products->save();
-
             DB::commit();
-
-        }catch(\Exception $e){
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors($e->getMessage());
+            return back()->withInput()->withErrors($e->validator->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
 
     public function renewal(Request $request, Product $product)
     {
         DB::beginTransaction();
-        
         try{
-
             $request->validate([
                 'product_name' => 'required|max:20',
                 'price' => 'required|integer',
@@ -134,9 +127,7 @@ class Product extends Model
             }
             
             $product->save();
-
             DB::commit();
-
         }catch(\Exception $e){
             DB::rollBack();
             return back()->withInput()->withErrors($e->getMessage());
