@@ -24,9 +24,13 @@ class SalesController extends Controller
             if(!$product){
                 return response()->json(['message' => '商品が存在しません'], 404);
             }
-            if($product->stock <= 0 || $product->stock < $quantity){
+            if($product->stock <= 0){
                 return response()->json(['message' => '在庫がありません'], 400);
             }
+            if($product->stock < $quantity){
+                return response()->json(['message' => '在庫数以上は購入できません'], 400);
+            }
+            
             $product->stock -= $quantity;
             $product->save();
 
