@@ -1,4 +1,4 @@
-jQuery('.purchase-button').on('click',function(){
+jQuery(document).on('click','.purchase-button',function(){
     var purchaseConfirm = confirm('購入しますか？');
     if(purchaseConfirm == true){
         var clickEle = jQuery(this);
