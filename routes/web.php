@@ -26,5 +26,4 @@ Auth::routes();
 Route::group(['middleware' => 'auth'], function(){
     Route::resource('products', App\Http\Controllers\ProductController::class);
     Route::get('search', [App\Http\Controllers\ProductController::class, 'search'])->name('search');
-    
 });

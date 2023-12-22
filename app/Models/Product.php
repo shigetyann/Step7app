@@ -4,8 +4,6 @@ namespace App\Models;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Validator;
-
 
 class Product extends Model
 {
@@ -33,17 +31,16 @@ class Product extends Model
 
     public function getList($keyword = null, $category = null, $priceMin = null, $priceMax = null, $stockMin = null, $stockMax = null) 
     {
-        $model = Product::query();
+        $model = $this->with('company');
         if($keyword)
         {$model -> where('product_name', 'like', "%{$keyword}%");}
 
-        if($category)
-        {
-            $company = Company::where('company_name', $category)->first();
-            if($company) {
-                $model -> where('company_id', $company->id);
-            }
+        if($category){
+        $model -> whereHas('company', function ($query) use ($category) {
+            $query -> where('company_name', 'like', "%{$category}%");
+        });
         }
+
         
         if($priceMin)
         {$model -> where('price', '>=', $priceMin);}
@@ -57,7 +54,7 @@ class Product extends Model
         if($stockMax)
         {$model -> where('stock', '<=', $stockMax);}
 
-        return $model;
+        return $model->paginate(5)->appends(['keyword' => $keyword, 'category' => $category, 'priceMin' => $priceMin, 'priceMax' => $priceMax, 'stockMin' => $stockMin, 'stockMax' => $stockMax,]);
     }
 
 
@@ -66,7 +63,7 @@ class Product extends Model
         DB::beginTransaction();
 
         try{
-            $validator = Validator::make($request->all(), [
+            $request->validate([
                 'product_name' => 'required|max:20',
                 'price' => 'required|integer',
                 'company_name' => 'required|string|exists:companies,company_name',
@@ -74,10 +71,6 @@ class Product extends Model
                 'comment' => 'required|max:200',
                 'img_path' => 'required|file|image',
             ]);
-
-            if ($validator->fails()) {
-                throw new \Illuminate\Validation\ValidationException($validator);
-            }
 
             $products = new Product;
             $products->product_name = $request->input(["product_name"]);
@@ -92,15 +85,11 @@ class Product extends Model
             $products->img_path = $path;
             $products->save();
             DB::commit();
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        }catch(\Exception $e){
             DB::rollBack();
-            return back()->withInput()->withErrors($e->validator->errors());
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors($e->getMessage());
         }
     }
-
 
     public function renewal(Request $request, Product $product)
     {

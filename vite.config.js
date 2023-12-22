@@ -9,7 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/delete.js',
                 'resources/js/purchase.js',
-                
+                'resources/js/search.js',
             ],
             refresh: true,
         }),
